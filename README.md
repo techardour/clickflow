@@ -52,3 +52,11 @@ export default tseslint.config({
   },
 })
 ```
+
+## Developer
+
+- **Name:** Jigneshkumar Patel
+- **Email:** jignesh.tplabs@gmail.com
+- **Project Maintainer:** Yes
+
+Feel free to reach out for questions or contributions!
