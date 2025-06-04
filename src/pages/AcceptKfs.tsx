@@ -60,7 +60,7 @@ const AcceptKfs = () => {
                 p: 3,
                 borderRadius: 2,
                 width: '100%',
-                maxWidth: 900,
+                maxWidth: '100%',
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'stretch',
