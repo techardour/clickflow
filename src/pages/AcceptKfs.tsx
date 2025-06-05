@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   Box, 
   Container, 
@@ -7,16 +7,35 @@ import {
   Checkbox, 
   FormControlLabel,
   Paper,
-  Stack
+  Stack,
+  CircularProgress
 } from '@mui/material';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
+import { storage } from '../utils/storage';
 import DownloadIcon from '@mui/icons-material/Download';
 import styles from '../styles/AcceptKfs.module.css';
 
 const AcceptKfs = () => {
   const { loanId, documentId } = useParams();
+  const navigate = useNavigate();
   const [isChecked, setIsChecked] = useState(false);
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    const checkAuth = () => {
+      const token = storage.getToken();
+      if (!token) {
+        navigate(`/kfs/${loanId}/${documentId}`);
+        return;
+      }
+      setIsAuthenticated(true);
+      setIsLoading(false);
+    };
+    
+    checkAuth();
+  }, [loanId, documentId, navigate]);
 
   const handleAccept = () => {
     if (!isChecked) {
@@ -26,16 +45,27 @@ const AcceptKfs = () => {
     // Handle acceptance logic here
     console.log('Accepted', { loanId, documentId });
   };
-
   return (
     <>
-      <Box className={styles.header}>
-        <Container maxWidth="xl">
-          <Typography variant="h6" align="left" className={styles.headerText}>
-            Key Facts Statement
+      {isLoading ? (
+        <Container sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+          <CircularProgress />
+        </Container>
+      ) : !isAuthenticated ? (
+        <Container sx={{ textAlign: 'center', mt: 10 }}>
+          <Typography color="error" variant="h6">
+            Authentication required. Redirecting...
           </Typography>
         </Container>
-      </Box>    
+      ) : (
+        <>
+          <Box className={styles.header}>
+            <Container maxWidth="xl">
+              <Typography variant="h6" align="left" className={styles.headerText}>
+                Key Facts Statement
+              </Typography>
+            </Container>
+          </Box>
 
       <Container maxWidth="xl" className={styles.container}>
         <Paper elevation={3} className={styles.paper}>
@@ -58,9 +88,6 @@ const AcceptKfs = () => {
                 You can integrate a PDF viewer component here.
               </Typography>
               <Typography variant="body1" align="left" className={styles.contentText}>
-                This is where the PDF content will be displayed. 
-                You can integrate a PDF viewer component here.
-              </Typography>              <Typography variant="body1" align="left" className={styles.contentText}>
                 This is where the PDF content will be displayed. 
                 You can integrate a PDF viewer component here.
               </Typography>              <Typography variant="body1" align="left" className={styles.contentText}>
@@ -145,8 +172,9 @@ const AcceptKfs = () => {
           className={styles.acceptButton}
         >
           Accept & Continue
-        </Button>
-      </Box>
+        </Button>      </Box>
+        </>
+      )}
     </>
   );
 };
