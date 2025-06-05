@@ -1,5 +1,6 @@
 export const config = {
-  API_BASE_URL: import.meta.env.VITE_API_BASE_URL,
+  AUTH_API_BASE_URL: import.meta.env.VITE_API_BASE_URL,
+  DOCUMENT_API_BASE_URL: import.meta.env.VITE_DOCUMENT_API_BASE_URL,
   APP_ID: '',
   APP_VERSION: '',
   LOGIN_TYPE: import.meta.env.VITE_LOGIN_TYPE,

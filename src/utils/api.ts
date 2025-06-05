@@ -1,10 +1,11 @@
 import axios from 'axios';
 import { config } from './config';
 import { storage } from './storage';
-import type { LoginRequest, LoginResponse } from './types';
+import type { LoginRequest, LoginResponse, DocumentResponse } from './types';
 
-const api = axios.create({
-  baseURL: config.API_BASE_URL,
+// Create auth API instance
+const authApi = axios.create({
+  baseURL: config.AUTH_API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
     'Accept': '*/*'
@@ -12,46 +13,53 @@ const api = axios.create({
   withCredentials: false
 });
 
-// Add request interceptor to include token
-api.interceptors.request.use(
-  (config) => {
+// Create document API instance
+const documentApiInstance = axios.create({
+  baseURL: config.DOCUMENT_API_BASE_URL,
+  headers: {
+    'Content-Type': 'application/json',
+    'Accept': '*/*'
+  },
+  withCredentials: false
+});
+
+// Configure request interceptors
+[authApi, documentApiInstance].forEach(api => {
+  api.interceptors.request.use(config => {
     const token = storage.getToken();
     if (token) {
+      config.headers = config.headers || {};
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
+  });
 
-// Add response interceptor to handle errors
-api.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response) {
-      switch (error.response.status) {
-        case 401:
-          storage.removeToken();
-          // Handle unauthorized
-          break;
-        case 403:
-          // Handle forbidden
-          break;
-        case 500:
-          // Handle server error
-          break;
+  api.interceptors.response.use(
+    response => response,
+    error => {
+      // Handle axios errors
+      if (error.response) {
+        switch (error.response.status) {
+          case 401:
+            storage.removeToken();
+            break;
+          case 403:
+            // Handle forbidden
+            break;
+          case 500:
+            // Handle server error
+            break;
+        }
+      } else if (error.request) {
+        // Network error
+        console.error('Network Error:', error.message);
       }
-    } else if (error.request) {
-      // Network error
-      console.error('Network Error:', error.message);
+      return Promise.reject(error);
     }
-    return Promise.reject(error);
-  }
-);
+  );
+});
 
-export const authApi = {
+export const auth = {
   login: async (username: string, password: string): Promise<LoginResponse> => {
     const data: LoginRequest = {
       loginType: config.LOGIN_TYPE,
@@ -62,14 +70,35 @@ export const authApi = {
     };
 
     try {
-      const response = await api.post('/auth/login', data);
-      if (response.data.token) {
-        storage.setToken(response.data.token);
+      const response = await authApi.post<LoginResponse>('/auth/login', data);
+      if (response.data.accessToken) {
+        storage.setToken(response.data.accessToken);
       }
       return response.data;
-    } catch (error: any) {
-      if (error.response) {
-        throw new Error(error.response.data.message || 'Authentication failed');
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new Error(error.message || 'Authentication failed');
+      }
+      throw new Error('Network error occurred');
+    }
+  }
+};
+
+export const documentApi = {  fetchPdf: async (documentId: string): Promise<string> => {
+    try {
+      const response = await documentApiInstance.get<DocumentResponse>('/v3/file', {
+        params: { documentId },
+        headers: {
+          'Accept': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'GET',
+          'Access-Control-Allow-Headers': 'Origin, Content-Type, Accept'
+        }
+      });
+      return response.data.documentUrl;
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new Error(error.message || 'Failed to fetch document URL');
       }
       throw new Error('Network error occurred');
     }

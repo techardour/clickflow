@@ -15,3 +15,7 @@ export interface ApiError {
   message: string;
   status: number;
 }
+
+export interface DocumentResponse {
+  documentUrl: string;
+}

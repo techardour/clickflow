@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { authApi } from '../utils/api';
+import { auth } from '../utils/api';
 import type { LoginResponse } from '../utils/types';
 
 export const useAuth = () => {
@@ -11,12 +11,10 @@ export const useAuth = () => {
     setError(null);
 
     try {
-      const response = await authApi.login(username, password);
-      // You might want to store the token in localStorage or a state management solution
-      localStorage.setItem('token', response.accessToken || '');
+      const response = await auth.login(username, password);
       return response;
-    } catch (err: any) {
-      const errorMessage = err.message || 'An error occurred during login';
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred during login';
       setError(errorMessage);
       throw new Error(errorMessage);
     } finally {
