@@ -1,6 +1,7 @@
 export const config = {
   AUTH_API_BASE_URL: import.meta.env.VITE_API_BASE_URL,
   DOCUMENT_API_BASE_URL: import.meta.env.VITE_DOCUMENT_API_BASE_URL,
+  CREDIT_ENGINE_API_BASE_URL: 'https://test1.fundly.ai/credit-engine/api/v1',
   APP_ID: '',
   APP_VERSION: '',
   LOGIN_TYPE: import.meta.env.VITE_LOGIN_TYPE,

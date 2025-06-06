@@ -23,8 +23,18 @@ const documentApiInstance = axios.create({
   withCredentials: false
 });
 
+// Create credit engine API instance
+const creditEngineApiInstance = axios.create({
+  baseURL: config.CREDIT_ENGINE_API_BASE_URL,
+  headers: {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json'
+  },
+  withCredentials: false
+});
+
 // Configure request interceptors
-[authApi, documentApiInstance].forEach(api => {
+[authApi, documentApiInstance, creditEngineApiInstance].forEach(api => {
   api.interceptors.request.use(config => {
     const token = storage.getToken();
     if (token) {
@@ -84,7 +94,8 @@ export const auth = {
   }
 };
 
-export const documentApi = {  fetchPdf: async (documentId: string): Promise<string> => {
+export const documentApi = {
+  fetchPdf: async (documentId: string): Promise<string> => {
     try {
       const response = await documentApiInstance.get<DocumentResponse>('/v3/file', {
         params: { documentId },
@@ -99,6 +110,21 @@ export const documentApi = {  fetchPdf: async (documentId: string): Promise<stri
     } catch (error) {
       if (error instanceof Error) {
         throw new Error(error.message || 'Failed to fetch document URL');
+      }
+      throw new Error('Network error occurred');
+    }
+  }
+};
+
+export const kfsApi = {
+  submitConsent: async (loanId: string): Promise<void> => {
+    try {
+      await creditEngineApiInstance.put('/kfs/customer-consent', null, {
+        params: { loanId }
+      });
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new Error(error.message || 'Failed to submit KFS consent');
       }
       throw new Error('Network error occurred');
     }

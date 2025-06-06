@@ -9,11 +9,13 @@ import {
   Paper,
   Stack,
   CircularProgress,
-  Alert
+  Alert,
+  Snackbar
 } from '@mui/material';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { useParams, useNavigate } from 'react-router-dom';
 import { storage } from '../utils/storage';
-import { documentApi } from '../utils/api';
+import { documentApi, kfsApi } from '../utils/api';
 import DownloadIcon from '@mui/icons-material/Download';
 import styles from '../styles/AcceptKfs.module.css';
 
@@ -26,6 +28,7 @@ const AcceptKfs = () => {
   const [pdfError, setPdfError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [showSuccessSnackbar, setShowSuccessSnackbar] = useState(false);
 
   useEffect(() => {
     const checkAuth = () => {
@@ -59,16 +62,28 @@ const AcceptKfs = () => {
     };
 
     fetchPdf();
-  }, [documentId, isAuthenticated]);
-
-  const handleAccept = useCallback(() => {
+  }, [documentId, isAuthenticated]);  const handleAccept = useCallback(async () => {
     if (!isChecked) {
       setError('Please review the entire document before accepting');
       return;
     }
-    // Handle acceptance logic here
-    console.log('Accepted', { loanId, documentId });
-  }, [isChecked, loanId, documentId]);
+    if (!loanId) {
+      setError('Loan ID is missing');
+      return;
+    }
+
+    try {      await kfsApi.submitConsent(loanId);
+      setShowSuccessSnackbar(true);
+      // Wait for snackbar to be visible before navigating
+      setTimeout(() => {
+        storage.removeToken(); // Logout
+        navigate('/thank-you'); // Navigate to thank you page
+      }, 2000);
+    } catch (err) {
+      console.error('Error submitting KFS consent:', err);
+      setError(err instanceof Error ? err.message : 'Failed to submit consent');
+    }
+  }, [isChecked, loanId, navigate]);
 
   const handleDownload = useCallback(() => {
     if (pdfUrl) {
@@ -166,8 +181,25 @@ const AcceptKfs = () => {
               Accept & Continue
             </Button>
           </Container>
-        </>
-      )}
+        </>      )}
+      <Snackbar
+        open={showSuccessSnackbar}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        autoHideDuration={2000}
+      >
+        <Alert
+          severity="success"
+          icon={<CheckCircleIcon fontSize="inherit" />}
+          sx={{ 
+            width: '100%',
+            '& .MuiAlert-icon': {
+              fontSize: '1.5rem'
+            }
+          }}
+        >
+          Key Facts Statement accepted successfully
+        </Alert>
+      </Snackbar>
     </>
   );
 };
