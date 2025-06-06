@@ -121,15 +121,10 @@ const AcceptKfs = () => {
                   <Alert severity="error" sx={{ m: 2 }}>
                     {pdfError}
                   </Alert>
-                ) : pdfUrl ? (
-                  <Box className={styles.contentBox}>                    <iframe
+                ) : pdfUrl ? (                  <Box className={styles.contentBox}>
+                    <iframe
                       src={`${pdfUrl}#toolbar=0&navpanes=0&scrollbar=0&statusbar=0&pagemode=none&view=FitH`}
-                      style={{
-                        width: '100%',
-                        height: '500px',
-                        border: 'none',
-                        backgroundColor: 'transparent'
-                      }}
+                      className={styles.pdfViewer}
                       title="PDF Viewer"
                     />
                   </Box>
