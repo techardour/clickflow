@@ -18,6 +18,7 @@ import { storage } from '../utils/storage';
 import { documentApi, kfsApi } from '../utils/api';
 import DownloadIcon from '@mui/icons-material/Download';
 import styles from '../styles/AcceptKfs.module.css';
+import ShowFileByType from '../components/ShowFileByType';
 
 const AcceptKfs = () => {
   const { loanId, documentId } = useParams();
@@ -62,7 +63,9 @@ const AcceptKfs = () => {
     };
 
     fetchPdf();
-  }, [documentId, isAuthenticated]);  const handleAccept = useCallback(async () => {
+  }, [documentId, isAuthenticated]);
+
+  const handleAccept = useCallback(async () => {
     if (!isChecked) {
       setError('Please review the entire document before accepting');
       return;
@@ -72,7 +75,8 @@ const AcceptKfs = () => {
       return;
     }
 
-    try {      await kfsApi.submitConsent(loanId);
+    try {
+      await kfsApi.submitConsent(loanId);
       setShowSuccessSnackbar(true);
       // Wait for snackbar to be visible before navigating
       setTimeout(() => {
@@ -136,11 +140,17 @@ const AcceptKfs = () => {
                   <Alert severity="error" sx={{ m: 2 }}>
                     {pdfError}
                   </Alert>
-                ) : pdfUrl ? (                  <Box className={styles.contentBox}>
-                    <iframe
-                      src={`${pdfUrl}#toolbar=0&navpanes=0&scrollbar=0&statusbar=0&pagemode=none&view=FitH`}
-                      className={styles.pdfViewer}
-                      title="PDF Viewer"
+                ) : pdfUrl ? (                  
+                  <Box className={styles.contentBox}>
+                    <ShowFileByType
+                      fileUrl={pdfUrl}
+                      width="100%"
+                      height="100%"
+                      onLoadSuccess={() => setPdfError(null)}
+                      onError={() => {
+                        console.error('Error loading PDF');
+                        setPdfError('Failed to load the document. Please try again.');
+                      }}
                     />
                   </Box>
                 ) : (
@@ -181,7 +191,8 @@ const AcceptKfs = () => {
               Accept & Continue
             </Button>
           </Container>
-        </>      )}
+        </>      
+      )}
       <Snackbar
         open={showSuccessSnackbar}
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
