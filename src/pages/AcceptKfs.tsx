@@ -89,16 +89,16 @@ const AcceptKfs = () => {
           </Typography>
         </Container>
       ) : (
-        <>
+        <>          
           <Box className={styles.header}>
-            <Container maxWidth="xl">
+            <Container maxWidth="xl" sx={{ px: { xs: 2, sm: 3 } }}>
               <Typography variant="h6" align="left" className={styles.headerText}>
                 Key Facts Statement
               </Typography>
             </Container>
           </Box>
 
-          <Container maxWidth="xl" className={styles.container}>
+          <Container maxWidth="xl" className={styles.container} sx={{ px: { xs: 2, sm: 3 } }}>
             <Paper elevation={3} className={styles.paper}>
               <Box className={styles.pdfHeader}>
                 <Box sx={{ flexGrow: 1 }}>
@@ -122,13 +122,13 @@ const AcceptKfs = () => {
                     {pdfError}
                   </Alert>
                 ) : pdfUrl ? (
-                  <Box className={styles.contentBox}>
-                    <iframe
-                      src={pdfUrl}
+                  <Box className={styles.contentBox}>                    <iframe
+                      src={`${pdfUrl}#toolbar=0&navpanes=0&scrollbar=0&statusbar=0&pagemode=none&view=FitH`}
                       style={{
                         width: '100%',
                         height: '500px',
-                        border: 'none'
+                        border: 'none',
+                        backgroundColor: 'transparent'
                       }}
                       title="PDF Viewer"
                     />
@@ -140,9 +140,9 @@ const AcceptKfs = () => {
                 )}
               </Stack>
             </Paper>
-          </Container>
+          </Container>  
 
-          <Container maxWidth="xl" sx={{ mt: 2, mb: 4 }}>
+          <Container maxWidth="xl" sx={{ mt: 2, mb: 4, px: { xs: 2, sm: 3 } }}>
             <FormControlLabel
               control={
                 <Checkbox
